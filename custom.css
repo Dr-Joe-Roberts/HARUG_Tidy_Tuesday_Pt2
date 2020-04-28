@@ -1,0 +1,72 @@
+
+
+/* Extra CSS */
+a, a > code {
+  color: #E7553C;
+}
+
+/* unvisited link */
+a:link {
+    color: #E7553C;
+    text-decoration: underline;
+}
+
+/* visited link */
+a:visited {
+    color: #E7553C;
+    text-decoration: underline;
+}
+
+.title-slide h1 {
+  font-size: 4em;
+  padding-top: .1em;
+  line-height: 1em;
+  padding-bottom: .1em;
+  word-wrap: break-word;
+  margin-bottom: 5px;
+}
+
+.title-slide h2 {
+  font-size: 2.5em;
+  color: #FFFFFF;
+  text-shadow: none;
+  padding-top: .1em;
+  margin-top: 0px;
+  margin-bottom: 100px;
+}
+
+.largest {font-size: 235% }
+.large { font-size: 170% }
+.medium { font-size: 120% }
+.small { font-size: 70% }
+
+/* Splits --------------------------------------------*/
+
+.split-40>.column:first-of-type {
+  width: 40%;
+  height:100%;
+  position: absolute;
+  top: 0;
+  left: 0; }
+
+.split-40>.column:nth-of-type(2) {
+  width: 60%;
+  height:100%;
+  position: absolute;
+  top: 0;
+  right: 0;}
+
+  .pull-left-reveal {
+    float: left;
+    width: 35%;
+  }
+  .pull-right-reveal {
+    float: right;
+    width: 60%;
+    font-size: 15px;
+  }
+
+.remark-code-line-highlighted {
+  border-radius: 7px;
+  background-image: linear-gradient(to right, rgb(251, 241, 193), #ffffff) !important;
+}

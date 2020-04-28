@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>TidyTuesday</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Joe Roberts" />
+    <link href="libs/font-awesome-5.3.1/css/fontawesome-all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="custom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+
+class: title-slide, center, bottom
+
+background-image: url(https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/static/tt_logo.png)
+background-size: 1000px
+background-position: 50% 10%
+
+### Joe Roberts 
+
+#### Harper Adams R Users Group &amp;#183; 2020-04-28
+
+---
+
+class: inverse, right, bottom
+
+
+&lt;img style="border-radius: 50%;" src="https://github.com/dr-joe-roberts.png" width="200px"/&gt;
+
+## Where to find me
+
+
+.medium[
+[<i class="fab  fa-github "></i> Dr-Joe-Roberts](https://github.com/Dr-Joe-Roberts)  
+[<i class="fab  fa-twitter "></i> Dr_Joe_Roberts](https://twitter.com/Dr_Joe_Roberts)  
+[<i class="fas  fa-paper-plane "></i> jroberts@harper-adams.ac.uk](mailto:jroberts@harper-adams.ac.uk)
+]
+
+---
+
+class: left, middle
+
+# What's the plan for today? 👨‍💻
+
+.medium[
+- Tidy Tuesday challenge
+
+- Useful websites for data visualisations in R
+
+- Deep dive into CO2 emissions and food data set
+]
+
+---
+
+class: left, middle
+
+# Two weeks ago I set a challenge...
+
+.medium[
+- Produce your own data visualisation from the food consumption-CO2 data 
+
+- Make it as complicated or as simple as you like
+
+- Show at the next **HARUG** meeting (2020-04-29)
+]
+
+---
+
+class: left, middle
+
+
+
+# Food consumption and CO2 emissions
+
+&gt; This data on annual CO2 emissions per person for 130 nations worldwide was originally compiled by the Food and Agriculture Organization of the United Nations (FAO) in 2018. 
+
+
+```
+## Rows: 1,430
+## Columns: 4
+## $ country       &lt;chr&gt; "Argentina", "Argentina", "Arg…
+## $ food_category &lt;chr&gt; "Pork", "Poultry", "Beef", "La…
+## $ consumption   &lt;dbl&gt; 10.51, 38.66, 55.48, 1.56, 4.3…
+## $ co2_emmission &lt;dbl&gt; 37.20, 41.53, 1712.00, 54.63, …
+```
+
+|Variable      |Class     |Description |
+|:-------------|:---------|:-----------|
+|country       |character | Country Name |
+|food_category |character | Food Category |
+|consumption   |double    | Consumption (kg/person/year) |
+|co2_emmission |double    | CO2 Emission (Kg CO2/person/year) |
+
+---
+
+class: left, top
+
+# Placeholder slide -&gt; HARUG Viz
+
+---
+
+class: center, middle
+
+
+
+![](index_files/figure-html/unnamed-chunk-2-1.svg)&lt;!-- --&gt;
+
+---
+
+class: center, middle
+
+.large[
+[From Data to Viz](https://www.data-to-viz.com/)
+
+[R Graph Gallery](https://www.r-graph-gallery.com/index.html)
+]
+
+---
+
+class: left, middle
+
+# Let's take a deeper dive into the data...
+
+.medium[
+1. How do CO2 emissions vary by country?
+
+2. What drives variation between countries?
+]
+
+--
+
+# Activity  (25 mins) ⌛
+
+.medium[ 
+- Plot CO2 emissions of top 10 and bottom 10 countries 
+
+- [Data](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-02-18/readme.md)
+]
+
+---
+
+class: left, middle
+
+# Data preparation 
+
+
+```r
+co2_emmission_by_country &lt;- food_consumption %&gt;%
+  group_by(country) %&gt;% # Group data by country
+  summarise(co2_emmission = sum(co2_emmission)) %&gt;% # Calculate total emissions for each country
+  arrange(co2_emmission) # Arrange data by CO2 emissions in ascending order
+```
+
+---
+
+count: false
+.pull-left-reveal[
+
+```r
+*rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10))
+```
+]
+.pull-right-reveal[
+
+```
+## # A tibble: 20 x 2
+##    country     co2_emmission
+##    &lt;chr&gt;               &lt;dbl&gt;
+##  1 Mozambique           141.
+##  2 Rwanda               182.
+##  3 Togo                 188.
+##  4 Liberia              203.
+##  5 Malawi               208.
+##  6 Ghana                218.
+##  7 Zambia               225.
+##  8 Ethiopia             242.
+##  9 Congo                263.
+## 10 Nigeria              268.
+## 11 Kazakhstan          1575.
+## 12 Luxembourg          1598.
+## 13 Brazil              1617.
+## 14 Uruguay             1635.
+## 15 USA                 1719.
+## 16 Iceland             1731.
+## 17 New Zealand         1751.
+## 18 Albania             1778.
+## 19 Australia           1939.
+## 20 Argentina           2172.
+```
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
+* ggplot(aes(x = country, y = co2_emmission))
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_food-type-emissions-plot_2-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
+  ggplot(aes(x = country, y = co2_emmission)) +  
+* geom_col()
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_food-type-emissions-plot_3-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
+  ggplot(aes(x = country, y = co2_emmission)) +  
+  geom_col() +  
+* coord_flip()
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_food-type-emissions-plot_4-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
+  ggplot(aes(x = country, y = co2_emmission)) +  
+  geom_col() +  
+  coord_flip() +  
+* aes(reorder(country, co2_emmission))
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_food-type-emissions-plot_5-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
+  ggplot(aes(x = country, y = co2_emmission)) +  
+  geom_col() +  
+  coord_flip() +  
+  aes(reorder(country, co2_emmission)) +  
+* theme_minimal()
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_food-type-emissions-plot_6-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
+  ggplot(aes(x = country, y = co2_emmission)) +  
+  geom_col() +  
+  coord_flip() +  
+  aes(reorder(country, co2_emmission)) +  
+  theme_minimal() +  
+* theme(panel.grid = element_blank())
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_food-type-emissions-plot_7-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
+  ggplot(aes(x = country, y = co2_emmission)) +  
+  geom_col() +  
+  coord_flip() +  
+  aes(reorder(country, co2_emmission)) +  
+  theme_minimal() +  
+  theme(panel.grid = element_blank()) +  
+* labs(
+*   x = "",
+*   y = "CO2 emissions\n(Kg / person / year)",
+*   title = "Per capita food CO2 emissions vary greatly by country"
+* )
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_food-type-emissions-plot_12-1.svg)&lt;!-- --&gt;
+]
+
+
+
+---
+
+class: left, middle
+
+# What drives variation between countries?
+
+.medium[
+1. Total food consumption? 
+
+2. Diet?
+]
+
+---
+
+class: center, middle
+
+![](index_files/figure-html/food-consumption-plot-1.svg)&lt;!-- --&gt;
+
+---
+
+class: center, middle
+
+![](index_files/figure-html/food-consumption-beakdown-plot-1.svg)&lt;!-- --&gt;
+
+---
+
+class: center, middle
+
+background-image: url(https://media.giphy.com/media/d8m7wQHB3Ct5S/giphy.gif)
+background-size: 800px
+background-position: 50% 60%
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLanguage": ["r", "yaml", "markdown"],
+"slideNumberFormat": "",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

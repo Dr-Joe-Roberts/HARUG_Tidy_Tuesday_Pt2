@@ -1,0 +1,362 @@
+---
+title: "TidyTuesday"
+subtitle: ""
+event: "Harper Adams R Users Group"
+date: "29-04-2020"
+author: "Joe Roberts"
+institute: "Harper Adams University"
+output:
+  xaringan::moon_reader:
+    seal: false
+    css: ["xaringan-themer.css", "custom.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLanguage: ["r", "yaml", "markdown"]
+      slideNumberFormat: ""
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+
+mono_accent(
+  base_color = "#1F4257",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Droid Mono")
+)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(dev = "svglite")
+source(file = here::here("libs-reveal/xaringan_reveal_parentheses_balanced.R"))
+options(tibble.width = 55,
+        tibble.max_extra_cols = 20)
+
+library(showtext)
+library(tidyverse)
+library(cowplot)
+library(openxlsx)
+library(here)
+library(ggpubr)
+```
+
+class: title-slide, center, bottom
+
+background-image: url(https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/static/tt_logo.png)
+background-size: 1000px
+background-position: 50% 10%
+
+### `r rmarkdown::metadata$author` 
+
+#### `r rmarkdown::metadata$event` &#183; `r Sys.Date()`
+
+---
+
+class: inverse, right, bottom
+
+
+<img style="border-radius: 50%;" src="https://github.com/dr-joe-roberts.png" width="200px"/>
+
+## Where to find me
+
+
+.medium[
+[`r icon::fa("github")` Dr-Joe-Roberts](https://github.com/Dr-Joe-Roberts)  
+[`r icon::fa("twitter")` Dr_Joe_Roberts](https://twitter.com/Dr_Joe_Roberts)  
+[`r icon::fa("paper-plane")` jroberts@harper-adams.ac.uk](mailto:jroberts@harper-adams.ac.uk)
+]
+
+---
+
+class: left, middle
+
+# What's the plan for today? `r emo::ji("coder")`
+
+.medium[
+- Tidy Tuesday challenge
+
+- Useful websites for data visualisations in R
+
+- Deep dive into CO2 emissions and food data set
+]
+
+---
+
+class: left, middle
+
+# Two weeks ago I set a challenge...
+
+.medium[
+- Produce your own data visualisation from the food consumption-CO2 data 
+
+- Make it as complicated or as simple as you like
+
+- Show at the next **HARUG** meeting (2020-04-29)
+]
+
+---
+
+class: left, middle
+
+```{r get-tt-data, message = FALSE, warning = FALSE, include = FALSE}
+food_consumption <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-02-18/food_consumption.csv')
+```
+
+# Food consumption and CO2 emissions
+
+> This data on annual CO2 emissions per person for 130 nations worldwide was originally compiled by the Food and Agriculture Organization of the United Nations (FAO) in 2018. 
+
+```{r glimpse-tt-data, echo=FALSE}
+glimpse(food_consumption) 
+```
+
+|Variable      |Class     |Description |
+|:-------------|:---------|:-----------|
+|country       |character | Country Name |
+|food_category |character | Food Category |
+|consumption   |double    | Consumption (kg/person/year) |
+|co2_emmission |double    | CO2 Emission (Kg CO2/person/year) |
+
+---
+
+class: left, top
+
+# Placeholder slide -> HARUG Viz
+
+---
+
+class: center, middle
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+countries <- read_csv("countries.csv")
+population <- read_csv("population.csv") %>%
+  filter(Time == 2020) %>%
+  select(Location, PopTotal) %>%
+  distinct() %>%
+  mutate(Location = recode(Location,
+    `Bolivia (Plurinational State of)` = "Bolivia",
+    `Democratic Republic of the Congo` = "Congo [DRC]",
+    Czechia = "Czech Republic",
+    `Iran (Islamic Republic of)` = "Iran",
+    Myanmar = "Myanmar [Burma]",
+    `Russian Federation` = "Russia",
+    `United States of America` = "United States",
+    `Venezuela (Bolivarian Republic of)` = "Venezuela",
+    `Viet Nam` = "Vietnam"
+  ))
+
+df_top <- food_consumption %>%
+  group_by(country) %>%
+  filter(co2_emmission == max(co2_emmission)) %>%
+  select(country, top_food = food_category) %>%
+  ungroup()
+
+df_sum <- food_consumption %>%
+  group_by(country) %>%
+  summarise(co2_emmission = sum(co2_emmission)) %>%
+  ungroup() %>%
+  left_join(df_top) %>%
+  mutate(country = recode(country,
+    Congo = "Congo [DRC]",
+    `Hong Kong SAR. China` = "Hong Kong",
+    Macedonia = "Macedonia [FYROM]",
+    Myanmar = "Myanmar [Burma]",
+    `Taiwan. ROC` = "Taiwan",
+    USA = "United States"
+  ))
+
+df_top_countries <- df_sum %>%
+  left_join(countries, by = c("country" = "name")) %>%
+  left_join(population, by = c("country" = "Location")) %>%
+  mutate(total_emissions = co2_emmission * PopTotal)
+
+world_map <- df_top %>%
+  mutate(country = recode(country,
+    Congo = "Democratic Republic of the Congo",
+    `Taiwan. ROC` = "Taiwan",
+    `United Kingdom` = "UK"
+  )) %>%
+  left_join(map_data("world"), by = c("country" = "region"))
+
+full_world <- map_data("world")
+```
+
+```{r echo=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+ggplot() +
+  geom_polygon(data = world_map, aes(x = long, y = lat, group = group), fill = "#4d4d4d", color = "#666666") +
+  geom_point(
+    data = df_top_countries, aes(longitude, latitude, size = total_emissions, col = top_food),
+    alpha = 0.5
+  ) +
+  scale_size(range = c(1, 20)) +
+  guides(
+    size = FALSE,
+    col = guide_legend(
+      title = "Food type with highest CO2 emissions",
+      override.aes = list(size = 10, alpha = 1)
+    )
+  ) +
+  labs(
+    title = "The food industry's carbon footprint",
+    subtitle = "Highest CO2-emitting food type in each country (measured in kg CO2/person/year).",
+    caption = "Bubbles are scaled by the country's total emission from food.\n When data is not available, boundaries for that country are not shown"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    legend.title = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+```
+
+---
+
+class: center, middle
+
+.large[
+[From Data to Viz](https://www.data-to-viz.com/)
+
+[R Graph Gallery](https://www.r-graph-gallery.com/index.html)
+]
+
+---
+
+class: left, middle
+
+# Let's take a deeper dive into the data...
+
+.medium[
+1. How do CO2 emissions vary by country?
+
+2. What drives variation between countries?
+]
+
+--
+
+# Activity  (25 mins) `r emo::ji("hourglass")`
+
+.medium[ 
+- Plot CO2 emissions of top 10 and bottom 10 countries 
+
+- [Data](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-02-18/readme.md)
+]
+
+---
+
+class: left, middle
+
+# Data preparation 
+
+```{r food-type-emissions-prep, message=FALSE, warning=FALSE}
+co2_emmission_by_country <- food_consumption %>%
+  group_by(country) %>% # Group data by country
+  summarise(co2_emmission = sum(co2_emmission)) %>% # Calculate total emissions for each country
+  arrange(co2_emmission) # Arrange data by CO2 emissions in ascending order
+```
+
+---
+
+`r apply_reveal("food-type-emissions-plot")`
+
+```{r food-type-emissions-plot, eval = FALSE, echo = FALSE}
+rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %>% 
+  ggplot(aes(x = country, y = co2_emmission)) +
+  geom_col() + 
+  coord_flip() + 
+  aes(reorder(country, co2_emmission)) +
+  theme_minimal() + 
+  theme(panel.grid = element_blank()) + 
+  labs(
+    x = "", 
+    y = "CO2 emissions\n(Kg / person / year)", 
+    title = "Per capita food CO2 emissions vary greatly by country"
+  ) 
+```
+
+---
+
+class: left, middle
+
+# What drives variation between countries?
+
+.medium[
+1. Total food consumption? 
+
+2. Diet?
+]
+
+---
+
+class: center, middle
+
+```{r food-consumption-plot, echo=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+# Initial plot
+food_consumption %>%
+  group_by(country) %>%
+  summarise(consumption = sum(consumption))%>%
+  left_join(co2_emmission_by_country, by = "country") %>%
+  ggplot(aes(x = consumption, y = co2_emmission)) +
+  geom_point(colour = "grey50") +
+  geom_smooth(method = "lm", se = FALSE, colour = "black") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+  ) +
+  labs(
+    x = "Total food consumed\n(Kg / person / year)",
+    y = "CO2 emissions\n(Kg / person / year)",
+    title = "A lot variation in CO2 emissions between countries can be explained by total food consumption",
+    subtitle = "But the relationship isn't perfect, there must be other contributing factors!"
+  ) +
+  stat_cor(aes(label = paste(..rr.label..)), label.x = 600)
+```
+
+---
+
+class: center, middle
+
+```{r food-consumption-beakdown-plot, echo=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+# Data preparation
+mix_data <- food_consumption %>%
+  group_by(country) %>%
+  mutate(percent = consumption / sum(consumption) * 100) %>%
+  select(country, food_category, percent) %>%
+  left_join(co2_emmission_by_country, by = "country")
+
+# Plot
+mix_data %>%
+  group_by(food_category) %>%
+  summarise(r2 = cor(percent, co2_emmission)^2) %>%
+  mutate(title = paste0(food_category, "\nR2: ", scales::number(r2, accuracy = 0.01))) %>%
+  inner_join(mix_data, by = "food_category") %>%
+  ggplot(aes(x = percent, y = co2_emmission)) +
+  geom_point(colour = "grey50") +
+  geom_smooth(method = "lm", se = FALSE, colour = "black") +
+  facet_wrap(title ~ ., scale = "free_x") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+  ) +
+  labs(
+    x = "Consumption (%)",
+    y = "CO2 emissions \n(Kg / person / year)",
+    title = "The importance of beef, milk and rice in diets explains a lot of the variation",
+    subtitle="In addition to the differences in total quantities consumed" 
+  )
+```
+
+---
+
+class: center, middle
+
+background-image: url(https://media.giphy.com/media/d8m7wQHB3Ct5S/giphy.gif)
+background-size: 800px
+background-position: 50% 60%
