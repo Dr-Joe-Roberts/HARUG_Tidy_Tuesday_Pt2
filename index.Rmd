@@ -33,7 +33,7 @@ mono_accent(
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(dev = "svglite")
 source(file = here::here("libs-reveal/xaringan_reveal_parentheses_balanced.R"))
-options(tibble.width = 55,
+options(tibble.width = 45,
         tibble.max_extra_cols = 20)
 
 library(showtext)
@@ -74,21 +74,16 @@ class: inverse, right, bottom
 
 class: left, middle
 
-# What's the plan for today? `r emo::ji("coder")`
+# What are the goals for today? `r emo::ji("coder")`
 
 .medium[
-- Tidy Tuesday challenge
-
-- Useful websites for data visualisations in R
-
-- Deep dive into CO2 emissions and food data set
 ]
 
 ---
 
 class: left, middle
 
-# Two weeks ago I set a challenge...
+# Two weeks ago I set a challenge... `r emo::ji("winner")`
 
 .medium[
 - Produce your own data visualisation from the food consumption-CO2 data 
@@ -106,7 +101,7 @@ class: left, middle
 food_consumption <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-02-18/food_consumption.csv')
 ```
 
-# Food consumption and CO2 emissions
+# Food consumption and CO2 emissions `r emo::ji("burger")`
 
 > This data on annual CO2 emissions per person for 130 nations worldwide was originally compiled by the Food and Agriculture Organization of the United Nations (FAO) in 2018. 
 
@@ -219,65 +214,52 @@ ggplot() +
 
 ---
 
-class: center, middle
-
-.large[
-[From Data to Viz](https://www.data-to-viz.com/)
-
-[R Graph Gallery](https://www.r-graph-gallery.com/index.html)
-]
-
----
-
 class: left, middle
 
-# Let's take a deeper dive into the data...
+# Keys to effective visual communication `r emo::ji("key")`
 
 .medium[
-1. How do CO2 emissions vary by country?
+**1. De-clutter** - reduce cognitive load, provide focus, remove useless info
 
-2. What drives variation between countries?
-]
+**2. Annotate** - use titles and labels, provide guidance, but be selective
 
---
-
-# Activity  (25 mins) `r emo::ji("hourglass")`
-
-.medium[ 
-- Plot CO2 emissions of top 10 and bottom 10 countries 
-
-- [Data](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-02-18/readme.md)
+**3. Highlight** - draw attention to key points
 ]
 
 ---
 
-class: left, middle
+background-image: url(https://socviz.co/assets/ch-01-chartjunk-life-expectancy.png)
+background-size: 700px
+background-position: 50% 80%
 
-# Data preparation 
+# What's wrong with this plot?
 
-```{r food-type-emissions-prep, message=FALSE, warning=FALSE}
-co2_emmission_by_country <- food_consumption %>%
+---
+
+class: center, middle
+
+```{r bad-plot-prep, message=FALSE, warning=FALSE, include=FALSE}
+co2_emission_by_country <- food_consumption %>%
   group_by(country) %>% # Group data by country
-  summarise(co2_emmission = sum(co2_emmission)) %>% # Calculate total emissions for each country
-  arrange(co2_emmission) # Arrange data by CO2 emissions in ascending order
+  summarise(co2_emission = sum(co2_emmission)) %>% # Calculate total emissions for each country
+  arrange(desc(co2_emission)) %>%  # Arrange data by CO2 emissions in ascending order
+  mutate(rank = row_number())  # Create a new variable ranking data
+  
+co2_emission_uk <- co2_emission_by_country %>%
+  filter(country == "United Kingdom")
+
+co2_emission_tb <- rbind(head(co2_emission_by_country, 10), 
+                         tail(co2_emission_by_country, 10), 
+                         co2_emission_uk)
 ```
 
----
-
-`r apply_reveal("food-type-emissions-plot")`
-
-```{r food-type-emissions-plot, eval = FALSE, echo = FALSE}
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %>% 
-  ggplot(aes(x = country, y = co2_emmission)) +
+```{r bad-plot, echo=FALSE, message=FALSE, warning=FALSE, out.height='600px'}
+  ggplot(co2_emission_tb, aes(x = country, y = co2_emission)) +
   geom_col() + 
-  coord_flip() + 
-  aes(reorder(country, co2_emmission)) +
-  theme_minimal() + 
-  theme(panel.grid = element_blank()) + 
   labs(
     x = "", 
-    y = "CO2 emissions\n(Kg / person / year)", 
-    title = "Per capita food CO2 emissions vary greatly by country"
+    y = "",
+    title = "Plot shows top 10 and bottom 10 countries by food CO2 emissions + UK"
   ) 
 ```
 
@@ -285,71 +267,113 @@ rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %>
 
 class: left, middle
 
-# What drives variation between countries?
+# Activity 1 - fix my plot (20 mins)  `r emo::ji("hourglass")`
 
 .medium[
-1. Total food consumption? 
+- Rotate plot using `coord_flip()`
 
-2. Diet?
+- Re-order countries using `aes(reorder(country, co2_emission))`
+
+- Add titles using `labs()` Hint: y = CO2 emissions (Kg / person / year)
+
+- Apply minimal theme using `theme_minimal()`
+
+- Remove panel grid using `theme(panel.grid = element_blank())`
 ]
 
 ---
 
 class: center, middle
 
-```{r food-consumption-plot, echo=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
-# Initial plot
-food_consumption %>%
-  group_by(country) %>%
-  summarise(consumption = sum(consumption))%>%
-  left_join(co2_emmission_by_country, by = "country") %>%
-  ggplot(aes(x = consumption, y = co2_emmission)) +
-  geom_point(colour = "grey50") +
-  geom_smooth(method = "lm", se = FALSE, colour = "black") +
+```{r bad-plot-fixed, echo=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+a <- co2_emission_tb %>%
+  ggplot(aes(x = country, y = co2_emission)) +
+  geom_col() +
+  coord_flip() +
+  aes(reorder(country, co2_emission)) +
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +
   theme_minimal() +
-  theme(
-    panel.grid = element_blank(),
-  ) +
+  theme(panel.grid = element_blank()) +
   labs(
-    x = "Total food consumed\n(Kg / person / year)",
-    y = "CO2 emissions\n(Kg / person / year)",
-    title = "A lot variation in CO2 emissions between countries can be explained by total food consumption",
-    subtitle = "But the relationship isn't perfect, there must be other contributing factors!"
-  ) +
-  stat_cor(aes(label = paste(..rr.label..)), label.x = 600)
+    x = "",
+    y = "CO2 emissions (Kg / person / year)",
+    title = "Per capita food CO2 emissions vary greatly by country",
+    subtitle = "UK is ranked 27th highest!"
+    ) +
+  geom_label(aes(x = country, y = co2_emission, label = round(rank, 0)),
+             hjust = 1, 
+             vjust = 0.5, 
+             colour = "black", 
+             fill = NA, 
+             label.size = NA, 
+             size = 4)
+
+b <- ggplot(co2_emission_tb, aes(x = country, y = co2_emission)) +
+  geom_col() + 
+  labs(
+    x = "", 
+    y = ""
+  ) 
+
+plot_grid(b, a)
 ```
 
 ---
 
-class: center, middle
+`r apply_reveal("bad-plot-fixed-flipbook")`
 
-```{r food-consumption-beakdown-plot, echo=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
-# Data preparation
-mix_data <- food_consumption %>%
-  group_by(country) %>%
-  mutate(percent = consumption / sum(consumption) * 100) %>%
-  select(country, food_category, percent) %>%
-  left_join(co2_emmission_by_country, by = "country")
-
-# Plot
-mix_data %>%
-  group_by(food_category) %>%
-  summarise(r2 = cor(percent, co2_emmission)^2) %>%
-  mutate(title = paste0(food_category, "\nR2: ", scales::number(r2, accuracy = 0.01))) %>%
-  inner_join(mix_data, by = "food_category") %>%
-  ggplot(aes(x = percent, y = co2_emmission)) +
-  geom_point(colour = "grey50") +
-  geom_smooth(method = "lm", se = FALSE, colour = "black") +
-  facet_wrap(title ~ ., scale = "free_x") +
+```{r bad-plot-fixed-flipbook, eval = FALSE, echo = FALSE}
+co2_emission_tb %>%
+  ggplot(aes(x = country, y = co2_emission)) +
+  geom_col() +
+  coord_flip() +
+  aes(reorder(country, co2_emission)) +
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +
   theme_minimal() +
-  theme(
-    panel.grid = element_blank(),
-  ) +
+  theme(panel.grid = element_blank()) +
   labs(
-    x = "Consumption (%)",
-    y = "CO2 emissions \n(Kg / person / year)",
-    title = "The importance of beef, milk and rice in diets explains a lot of the variation",
-    subtitle="In addition to the differences in total quantities consumed" 
+    x = "",
+    y = "CO2 emissions (Kg / person / year)",
+    title = "Per capita food CO2 emissions vary greatly by country",
+    subtitle = "UK is ranked 27th highest!"
+  ) +
+  geom_label(aes(x = country, y = co2_emission, label = round(rank, 0)),
+             hjust = 1, 
+             vjust = 0.5, 
+             colour = "black", 
+             fill = NA, 
+             label.size = NA, 
+             size = 4)
+```
+
+---
+
+class: left, middle
+
+```{}
+co2_emission_tb %>%  # Select data to plot
+  ggplot(aes(x = country, y = co2_emission)) +  # Select variables to plot
+  geom_col() +  # Select plot type
+  coord_flip() +  # Rotate plot 
+  aes(reorder(country, co2_emission)) +  # Re-order countries by CO2 emission value
+  # Select parameters to fill UK column
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +
+  theme_minimal() +  # Select theme
+  theme(panel.grid = element_blank()) +  # Remove panel grid
+  labs(
+    x = "",  # x-axis label
+    y = "CO2 emissions (Kg / person / year)",  # y-axis
+    title = "Per capita food CO2 emissions vary greatly by country",  # Main title
+    subtitle = "UK is ranked 27th highest!"  # Sub-title
+  ) +
+  # Select parameters to add rank labels inside columns
+  geom_label(aes(x = country, y = co2_emission, label = round(rank, 0)),  
+    hjust = 1,  # Adjust text horizontal position
+    vjust = 0.5,  # Adjust text vertical position
+    colour = "black",  # Select colour
+    fill = NA,  # Remove label background
+    label.size = NA,  # Remove label
+    size = 4  # Select text size
   )
 ```
 
@@ -357,6 +381,6 @@ mix_data %>%
 
 class: center, middle
 
-background-image: url(https://media.giphy.com/media/d8m7wQHB3Ct5S/giphy.gif)
-background-size: 800px
-background-position: 50% 60%
+.large[
+`r emo::ji("link")` [from Data to Viz](https://www.data-to-viz.com/)
+]

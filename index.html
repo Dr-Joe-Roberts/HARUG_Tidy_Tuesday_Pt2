@@ -46,21 +46,16 @@ class: inverse, right, bottom
 
 class: left, middle
 
-# What's the plan for today? 👨‍💻
+# What are the goals for today? 👩‍💻
 
 .medium[
-- Tidy Tuesday challenge
-
-- Useful websites for data visualisations in R
-
-- Deep dive into CO2 emissions and food data set
 ]
 
 ---
 
 class: left, middle
 
-# Two weeks ago I set a challenge...
+# Two weeks ago I set a challenge... 🏆
 
 .medium[
 - Produce your own data visualisation from the food consumption-CO2 data 
@@ -76,7 +71,7 @@ class: left, middle
 
 
 
-# Food consumption and CO2 emissions
+# Food consumption and CO2 emissions 🍔
 
 &gt; This data on annual CO2 emissions per person for 130 nations worldwide was originally compiled by the Food and Agriculture Organization of the United Nations (FAO) in 2018. 
 
@@ -84,10 +79,10 @@ class: left, middle
 ```
 ## Rows: 1,430
 ## Columns: 4
-## $ country       &lt;chr&gt; "Argentina", "Argentina", "Arg…
-## $ food_category &lt;chr&gt; "Pork", "Poultry", "Beef", "La…
-## $ consumption   &lt;dbl&gt; 10.51, 38.66, 55.48, 1.56, 4.3…
-## $ co2_emmission &lt;dbl&gt; 37.20, 41.53, 1712.00, 54.63, …
+## $ country       &lt;chr&gt; "Argentina", "Argent…
+## $ food_category &lt;chr&gt; "Pork", "Poultry", "…
+## $ consumption   &lt;dbl&gt; 10.51, 38.66, 55.48,…
+## $ co2_emmission &lt;dbl&gt; 37.20, 41.53, 1712.0…
 ```
 
 |Variable      |Class     |Description |
@@ -113,49 +108,57 @@ class: center, middle
 
 ---
 
-class: center, middle
-
-.large[
-[From Data to Viz](https://www.data-to-viz.com/)
-
-[R Graph Gallery](https://www.r-graph-gallery.com/index.html)
-]
-
----
-
 class: left, middle
 
-# Let's take a deeper dive into the data...
+# Keys to effective visual communication 🔑
 
 .medium[
-1. How do CO2 emissions vary by country?
+**1. De-clutter** - reduce cognitive load, provide focus, remove useless info
 
-2. What drives variation between countries?
+**2. Annotate** - use titles and labels, provide guidance, but be selective
+
+**3. Highlight** - draw attention to key points
 ]
 
---
+---
 
-# Activity  (25 mins) ⌛
+background-image: url(https://socviz.co/assets/ch-01-chartjunk-life-expectancy.png)
+background-size: 700px
+background-position: 50% 80%
 
-.medium[ 
-- Plot CO2 emissions of top 10 and bottom 10 countries 
+# What's wrong with this plot?
 
-- [Data](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-02-18/readme.md)
-]
+---
+
+class: center, middle
+
+
+
+&lt;img src="index_files/figure-html/bad-plot-1.svg" height="600px" /&gt;
 
 ---
 
 class: left, middle
 
-# Data preparation 
+# Activity 1 - fix my plot (20 mins)  ⌛
 
+.medium[
+- Rotate plot using `coord_flip()`
 
-```r
-co2_emmission_by_country &lt;- food_consumption %&gt;%
-  group_by(country) %&gt;% # Group data by country
-  summarise(co2_emmission = sum(co2_emmission)) %&gt;% # Calculate total emissions for each country
-  arrange(co2_emmission) # Arrange data by CO2 emissions in ascending order
-```
+- Re-order countries using `aes(reorder(country, co2_emission))`
+
+- Add titles using `labs()` Hint: y = CO2 emissions (Kg / person / year)
+
+- Apply minimal theme using `theme_minimal()`
+
+- Remove panel grid using `theme(panel.grid = element_blank())`
+]
+
+---
+
+class: center, middle
+
+![](index_files/figure-html/bad-plot-fixed-1.svg)&lt;!-- --&gt;
 
 ---
 
@@ -163,35 +166,26 @@ count: false
 .pull-left-reveal[
 
 ```r
-*rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10))
+*co2_emission_tb
 ```
 ]
 .pull-right-reveal[
 
 ```
-## # A tibble: 20 x 2
-##    country     co2_emmission
-##    &lt;chr&gt;               &lt;dbl&gt;
-##  1 Mozambique           141.
-##  2 Rwanda               182.
-##  3 Togo                 188.
-##  4 Liberia              203.
-##  5 Malawi               208.
-##  6 Ghana                218.
-##  7 Zambia               225.
-##  8 Ethiopia             242.
-##  9 Congo                263.
-## 10 Nigeria              268.
-## 11 Kazakhstan          1575.
-## 12 Luxembourg          1598.
-## 13 Brazil              1617.
-## 14 Uruguay             1635.
-## 15 USA                 1719.
-## 16 Iceland             1731.
-## 17 New Zealand         1751.
-## 18 Albania             1778.
-## 19 Australia           1939.
-## 20 Argentina           2172.
+## # A tibble: 21 x 3
+##    country     co2_emission  rank
+##    &lt;chr&gt;              &lt;dbl&gt; &lt;int&gt;
+##  1 Argentina          2172.     1
+##  2 Australia          1939.     2
+##  3 Albania            1778.     3
+##  4 New Zealand        1751.     4
+##  5 Iceland            1731.     5
+##  6 USA                1719.     6
+##  7 Uruguay            1635.     7
+##  8 Brazil             1617.     8
+##  9 Luxembourg         1598.     9
+## 10 Kazakhstan         1575.    10
+## # … with 11 more rows
 ```
 ]
 ---
@@ -199,109 +193,160 @@ count: false
 .pull-left-reveal[
 
 ```r
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
-* ggplot(aes(x = country, y = co2_emmission))
+co2_emission_tb %&gt;%  
+* ggplot(aes(x = country, y = co2_emission))
 ```
 ]
 .pull-right-reveal[
-![](index_files/figure-html/output_food-type-emissions-plot_2-1.svg)&lt;!-- --&gt;
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_2-1.svg)&lt;!-- --&gt;
 ]
 ---
 count: false
 .pull-left-reveal[
 
 ```r
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
-  ggplot(aes(x = country, y = co2_emmission)) +  
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
 * geom_col()
 ```
 ]
 .pull-right-reveal[
-![](index_files/figure-html/output_food-type-emissions-plot_3-1.svg)&lt;!-- --&gt;
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_3-1.svg)&lt;!-- --&gt;
 ]
 ---
 count: false
 .pull-left-reveal[
 
 ```r
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
-  ggplot(aes(x = country, y = co2_emmission)) +  
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
   geom_col() +  
 * coord_flip()
 ```
 ]
 .pull-right-reveal[
-![](index_files/figure-html/output_food-type-emissions-plot_4-1.svg)&lt;!-- --&gt;
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_4-1.svg)&lt;!-- --&gt;
 ]
 ---
 count: false
 .pull-left-reveal[
 
 ```r
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
-  ggplot(aes(x = country, y = co2_emmission)) +  
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
   geom_col() +  
   coord_flip() +  
-* aes(reorder(country, co2_emmission))
+* aes(reorder(country, co2_emission))
 ```
 ]
 .pull-right-reveal[
-![](index_files/figure-html/output_food-type-emissions-plot_5-1.svg)&lt;!-- --&gt;
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_5-1.svg)&lt;!-- --&gt;
 ]
 ---
 count: false
 .pull-left-reveal[
 
 ```r
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
-  ggplot(aes(x = country, y = co2_emmission)) +  
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
   geom_col() +  
   coord_flip() +  
-  aes(reorder(country, co2_emmission)) +  
+  aes(reorder(country, co2_emission)) +  
+* geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd"))
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_6-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
+  geom_col() +  
+  coord_flip() +  
+  aes(reorder(country, co2_emission)) +  
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +  
 * theme_minimal()
 ```
 ]
 .pull-right-reveal[
-![](index_files/figure-html/output_food-type-emissions-plot_6-1.svg)&lt;!-- --&gt;
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_7-1.svg)&lt;!-- --&gt;
 ]
 ---
 count: false
 .pull-left-reveal[
 
 ```r
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
-  ggplot(aes(x = country, y = co2_emmission)) +  
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
   geom_col() +  
   coord_flip() +  
-  aes(reorder(country, co2_emmission)) +  
+  aes(reorder(country, co2_emission)) +  
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +  
   theme_minimal() +  
 * theme(panel.grid = element_blank())
 ```
 ]
 .pull-right-reveal[
-![](index_files/figure-html/output_food-type-emissions-plot_7-1.svg)&lt;!-- --&gt;
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_8-1.svg)&lt;!-- --&gt;
 ]
 ---
 count: false
 .pull-left-reveal[
 
 ```r
-rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&gt;%  
-  ggplot(aes(x = country, y = co2_emmission)) +  
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
   geom_col() +  
   coord_flip() +  
-  aes(reorder(country, co2_emmission)) +  
+  aes(reorder(country, co2_emission)) +  
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +  
   theme_minimal() +  
   theme(panel.grid = element_blank()) +  
 * labs(
 *   x = "",
-*   y = "CO2 emissions\n(Kg / person / year)",
-*   title = "Per capita food CO2 emissions vary greatly by country"
+*   y = "CO2 emissions (Kg / person / year)",
+*   title = "Per capita food CO2 emissions vary greatly by country",
+*   subtitle = "UK is ranked 27th highest!"
 * )
 ```
 ]
 .pull-right-reveal[
-![](index_files/figure-html/output_food-type-emissions-plot_12-1.svg)&lt;!-- --&gt;
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_14-1.svg)&lt;!-- --&gt;
+]
+---
+count: false
+.pull-left-reveal[
+
+```r
+co2_emission_tb %&gt;%  
+  ggplot(aes(x = country, y = co2_emission)) +  
+  geom_col() +  
+  coord_flip() +  
+  aes(reorder(country, co2_emission)) +  
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +  
+  theme_minimal() +  
+  theme(panel.grid = element_blank()) +  
+  labs(  
+    x = "",  
+    y = "CO2 emissions (Kg / person / year)",  
+    title = "Per capita food CO2 emissions vary greatly by country",  
+    subtitle = "UK is ranked 27th highest!"  
+  ) +  
+* geom_label(aes(x = country, y = co2_emission, label = round(rank, 0)),
+*            hjust = 1,
+*            vjust = 0.5,
+*            colour = "black",
+*            fill = NA,
+*            label.size = NA,
+*            size = 4)
+```
+]
+.pull-right-reveal[
+![](index_files/figure-html/output_bad-plot-fixed-flipbook_21-1.svg)&lt;!-- --&gt;
 ]
 
 
@@ -310,33 +355,40 @@ rbind(head(co2_emmission_by_country, 10), tail(co2_emmission_by_country, 10)) %&
 
 class: left, middle
 
-# What drives variation between countries?
+```{}
+co2_emission_tb %&gt;%  # Select data to plot
+  ggplot(aes(x = country, y = co2_emission)) +  # Select variables to plot
+  geom_col() +  # Select plot type
+  coord_flip() +  # Rotate plot 
+  aes(reorder(country, co2_emission)) +  # Re-order countries by CO2 emission value
+  # Select parameters to fill UK column
+  geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +
+  theme_minimal() +  # Select theme
+  theme(panel.grid = element_blank()) +  # Remove panel grid
+  labs(
+    x = "",  # x-axis label
+    y = "CO2 emissions (Kg / person / year)",  # y-axis
+    title = "Per capita food CO2 emissions vary greatly by country",  # Main title
+    subtitle = "UK is ranked 27th highest!"  # Sub-title
+  ) +
+  # Select parameters to add rank labels inside columns
+  geom_label(aes(x = country, y = co2_emission, label = round(rank, 0)),  
+    hjust = 1,  # Adjust text horizontal position
+    vjust = 0.5,  # Adjust text vertical position
+    colour = "black",  # Select colour
+    fill = NA,  # Remove label background
+    label.size = NA,  # Remove label
+    size = 4  # Select text size
+  )
+```
 
-.medium[
-1. Total food consumption? 
+---
 
-2. Diet?
+class: center, middle
+
+.large[
+🔗 [from Data to Viz](https://www.data-to-viz.com/)
 ]
-
----
-
-class: center, middle
-
-![](index_files/figure-html/food-consumption-plot-1.svg)&lt;!-- --&gt;
-
----
-
-class: center, middle
-
-![](index_files/figure-html/food-consumption-beakdown-plot-1.svg)&lt;!-- --&gt;
-
----
-
-class: center, middle
-
-background-image: url(https://media.giphy.com/media/d8m7wQHB3Ct5S/giphy.gif)
-background-size: 800px
-background-position: 50% 60%
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
