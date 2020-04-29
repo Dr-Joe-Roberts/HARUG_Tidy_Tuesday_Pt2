@@ -149,6 +149,18 @@ Joe Blackshaw-Crosby
 
 class: center, middle
 
+background-image: url(images/alejandra_plot.png)
+background-size: 900px
+background-position: 50% 50%
+
+.footnote[
+Alejandra Narvaez
+]
+
+---
+
+class: center, middle
+
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 countries <- read_csv("countries.csv")
 population <- read_csv("population.csv") %>%
