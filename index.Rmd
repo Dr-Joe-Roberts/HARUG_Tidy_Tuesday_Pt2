@@ -77,6 +77,11 @@ class: left, middle
 # What are the goals for today? `r emo::ji("coder")`
 
 .medium[
+- Evaluate my Tidy Tuesday challenge 
+
+- Introduce **(some)** principles for good data viz
+
+- Learn how to tweak the appearance of a ggplot
 ]
 
 ---
@@ -118,9 +123,15 @@ glimpse(food_consumption)
 
 ---
 
-class: left, top
+class: center, middle
 
-# Placeholder slide -> HARUG Viz
+background-image: url(images/louis_plot.png)
+background-size: 600px
+background-position: 50% 50%
+
+.footnote[
+Louis Nicholls
+]
 
 ---
 
@@ -212,6 +223,22 @@ ggplot() +
   )
 ```
 
+.footnote[
+Joe Roberts
+]
+
+---
+
+class: center, middle
+
+# What makes a good data visualisation?
+
+---
+
+background-image: url(https://apreshill.github.io/ohsu-biodatavis/images/aim-here.png)
+background-size: 800px
+background-position: 50% 50%
+
 ---
 
 class: left, middle
@@ -219,7 +246,7 @@ class: left, middle
 # Keys to effective visual communication `r emo::ji("key")`
 
 .medium[
-**1. De-clutter** - reduce cognitive load, provide focus, remove useless info
+**1. De-clutter** - remove useless info, reduce cognitive load, provide focus 
 
 **2. Annotate** - use titles and labels, provide guidance, but be selective
 
@@ -228,11 +255,11 @@ class: left, middle
 
 ---
 
-background-image: url(https://socviz.co/assets/ch-01-chartjunk-life-expectancy.png)
-background-size: 700px
+background-image: url(https://pbs.twimg.com/media/EWtFKswU0AAb0dE?format=jpg&name=large)
+background-size: 800px
 background-position: 50% 80%
 
-# What's wrong with this plot?
+# Activity 1 - um, what?! (5 mins) `r emo::ji("hourglass")`
 
 ---
 
@@ -267,7 +294,7 @@ co2_emission_tb <- rbind(head(co2_emission_by_country, 10),
 
 class: left, middle
 
-# Activity 1 - fix my plot (20 mins)  `r emo::ji("hourglass")`
+# Activity 2 - pimp my ggplot (20 mins)  `r emo::ji("hourglass")`
 
 .medium[
 - Rotate plot using `coord_flip()`
@@ -331,12 +358,10 @@ co2_emission_tb %>%
   geom_col(fill = ifelse(co2_emission_tb$country == "United Kingdom", "#1380A1", "#dddddd")) +
   theme_minimal() +
   theme(panel.grid = element_blank()) +
-  labs(
-    x = "",
-    y = "CO2 emissions (Kg / person / year)",
-    title = "Per capita food CO2 emissions vary greatly by country",
-    subtitle = "UK is ranked 27th highest!"
-  ) +
+  labs(x = "") +
+  labs(y = "CO2 emissions (Kg / person / year)") +
+  labs(title = "Per capita food CO2 emissions vary greatly by country") +
+  labs(subtitle = "UK is ranked 27th highest!") +
   geom_label(aes(x = country, y = co2_emission, label = round(rank, 0)),
              hjust = 1, 
              vjust = 0.5, 
