@@ -173,6 +173,18 @@ Emily Forbes
 
 class: center, middle
 
+background-image: url(images/nasamu_plot.png)
+background-size: 800px
+background-position: 50% 50%
+
+.footnote[
+Nasamu Musa
+]
+
+---
+
+class: center, middle
+
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 countries <- read_csv("countries.csv")
 population <- read_csv("population.csv") %>%
